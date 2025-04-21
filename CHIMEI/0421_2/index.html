@@ -22,9 +22,12 @@
 
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
-    <div id="startARDiv" class="ctaDiv" style="display: none;">
+    <div id="startARDiv" class="ctaDiv" style="background: #2f2e32">
       <select id="chooseCamSel" style="visibility: hidden; background: transparent; border: .05vh solid white; border-radius: max(0.5vw, 0.5vh); color:white; font-size: max(1.5vw, 1.5vh); position: absolute; bottom: 80px" 
         onchange="SelectCam()"></select>
+      <p style="text-align: center; width:min(60vw, 60vh);">此擴增實境體驗需要存取您的裝置相機和動作感應器</p>
+      <button id="startARButton" onclick="StartAR()" style="visibility: hidden">允許存取</button>
+      <br><br><br>
     </div>
     <div id="screenshotDiv" style="visibility: hidden; opacity: 0;" class="ctaDiv">
         <div style="position:relative; background-color:#2c2b2f; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); border-radius: max(1.5vh, 1.5vw); text-align: center; overflow: hidden"> 
@@ -89,7 +92,9 @@
             return;
         }
         await LoadWebcams();
-        StartAR(); // 直接開始體驗
+        document.getElementById("startARButton").style.visibility = "visible";
+        window.camPermissionsGranted = await IsCameraPermissionGranted();
+        window.motionPermissionsGranted = await IsMotionSensorPermissionGranted();
       }
       initialize();
       window.addEventListener("load", function () {
@@ -169,9 +174,17 @@
             loadingBar.style.display = "none";
             
             window.unityInstance = unityInstance;
+            if(!window.camPermissionsGranted) {
+              RequestWebcam();
+            }
           }).catch((message) => {
             alert(message);
           });
+          // if(!window.motionPermissionsGranted){
+            StartMotionSensors();
+          // }
+            
+          //Call Start GPS here --> StartGPS();
         };
         document.body.appendChild(script);
       }
@@ -183,32 +196,60 @@
           },
           audio: false
       };
-      window.requestingForCameraPermission = false;
+      window.requestingForPermissions = false;
       async function RequestWebcam(){
+          window.requestingForPermissions = true;
           try{
               window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
-              arCamera.setFlipped(window.WEBCAM_SETTINGS.video.facingMode == 'user');
               console.log("Webcam access granted");
+              requestingForPermissions = false;
+              // Immediately stop the stream to release the camera
+              StopWebcam();
           }
           catch (err) {
+              //user denied camera permission - show error panel
               console.error("getUserMedia error - " , err);
               ShowError("Failed to start the experience. Camera permission was denied");
+              window.requestingForPermissions = false;
           }           
+      }
+      function StopWebcam(){
+          console.log("stopping camera");
+          window.webcamStream.getTracks().forEach(track => track.stop());    
       }
       async function StartWebcam(){
           console.log("StartWebcam")
-          try {
-              window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
+          window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
+          while (window.requestingForPermissions) {
+              // Wait until requestingForPermissions becomes true.
+              console.log("Waiting for permissions...");
+              await new Promise(resolve => setTimeout(resolve, 100)); // Adjust the delay time as needed.
+          }
+          console.log("Got Permissions");
+          if(window.webcamStream)
+          {
               const video = document.querySelector("#webcam-video");
               video.srcObject = webcamStream;
-              await arCamera.startWebcam(video);
-              console.log("Webcam started successfully");
-              window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
+              try {
+                  await arCamera.startWebcam(video);
+                  console.log("Webcam started successfully");
+                  window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
+                 
+                  //replace background transparency
+                  const canvas = document.querySelector("#unity-canvas");
+                  let bgColor = window.getComputedStyle(canvas).backgroundColor;
+                  canvas.style.background = bgColor.replace("rgb", "rgba").replace(")", ", 0)");
+                  
+              }
+              catch(err){
+                  console.error("Webcam failed to start - ", err);
+                  window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamFail');
+              }   
           }
-          catch(err){
-              console.error("Webcam failed to start - ", err);
+          else{
+              console.error("Webcam failed to start - permission not yet granted");
               window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamFail');
-          }
+          }  
       }
       async function LoadWebcams(){
           let camDevices = [];
@@ -277,6 +318,75 @@
           const video = document.querySelector("#webcam-video");
           video.srcObject = webcamStream;
           await arCamera.startWebcam(video);
+      }
+      async function IsCameraPermissionGranted() {
+          if (!navigator.permissions || !navigator.mediaDevices) {
+              console.log("Permissions API or mediaDevices not supported.");
+              return false;
+          }
+          try {
+              // Query the status of the camera permission
+              const permissionStatus = await navigator.permissions.query({ name: "camera" });
+              if (permissionStatus.state === "granted") {
+              console.log("Camera permission has already been granted.");
+              return true;
+              } else if (permissionStatus.state === "prompt") {
+              console.log("Camera permission is promptable.");
+              return false;
+              } else {
+              console.log("Camera permission has been denied.");
+              return false;
+              }
+          } catch (error) {
+              console.log("Error checking camera permission:", error);
+              return false;
+          }
+      }
+      async function IsMotionSensorPermissionGranted() {
+          if (!navigator.permissions) {
+              console.log("Permissions API not supported.");
+              return false;
+          }
+          try {
+              // Query the status of the accelerometer permission
+              const permissionStatus = await navigator.permissions.query({ name: "accelerometer" });
+              if (permissionStatus.state === "granted") {
+                  console.log("Motion sensor permission has already been granted.");
+                  return true;
+              } else if (permissionStatus.state === "prompt") {
+                  console.log("Motion sensor permission is promptable.");
+                  return false;
+              } else {
+                  console.log("Motion sensor permission has been denied.");
+                  return false;
+              }
+          } catch (error) {
+              console.log("Error checking motion sensor permission:", error);
+              return false;
+          }
+      }
+      async function IsGPSPermissionGranted() {
+        if (!navigator.permissions) {
+            console.log("Permissions API not supported.");
+            return false;
+        }
+        try {
+            // Query the status of the geolocation permission
+            const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+            if (permissionStatus.state === "granted") {
+                console.log("GPS permission has already been granted.");
+                return true;
+            } else if (permissionStatus.state === "prompt") {
+                console.log("GPS permission is promptable.");
+                return false;
+            } else {
+                console.log("GPS permission has been denied.");
+                return false;
+            }
+        } catch (error) {
+            console.log("Error checking GPS permission:", error);
+            return false;
+        }
       }
       function StartMotionSensors(){
             window.wTracker.startAngles()
