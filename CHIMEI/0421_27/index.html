@@ -25,8 +25,8 @@
     <div id="startARDiv" class="ctaDiv" style="background: #2f2e32">
       <select id="chooseCamSel" style="visibility: hidden; background: transparent; border: .05vh solid white; border-radius: max(0.5vw, 0.5vh); color:white; font-size: max(1.5vw, 1.5vh); position: absolute; bottom: 80px" 
         onchange="SelectCam()"></select>
-      <p style="text-align: center; width:min(60vw, 60vh);">此擴增實境體驗需要存取您的裝置相機和動作感應器</p>
-      <button id="startARButton" onclick="StartAR()" style="visibility: hidden">允許存取</button>
+      <p style="text-align: center; width:min(60vw, 60vh);">This augmented reality experience requires access to your device's camera and motion sensors</p>
+      <button id="startARButton" onclick="StartAR()" style="visibility: hidden">ALLOW ACCESS</button>
       <br><br><br>
     </div>
     <div id="screenshotDiv" style="visibility: hidden; opacity: 0;" class="ctaDiv">
@@ -150,8 +150,6 @@
           productName: "WebAR",
           productVersion: "0.1",
           showBanner: unityShowBanner,
-          matchWebGLToCanvasSize: true,
-          devicePixelRatio: 1,
         };
         // By default Unity keeps WebGL canvas render target size matched with
         // the DOM size of the canvas element (scaled by window.devicePixelRatio)
