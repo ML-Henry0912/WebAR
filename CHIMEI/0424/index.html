@@ -419,6 +419,13 @@
           errorDiv.style.opacity = 1;
           errorDiv.style.visibility = "visible";
           document.getElementById("errorText").innerHTML = error;
+          // 如果是相機權限錯誤，停止 Unity 實例
+          if (error.includes("Camera permission was denied")) {
+              if (window.unityInstance) {
+                  window.unityInstance.Quit();
+                  window.unityInstance = null;
+              }
+          }
       }
       function ShowScreenshot(dataUrl){
           var screenshotDiv = document.getElementById("screenshotDiv");
