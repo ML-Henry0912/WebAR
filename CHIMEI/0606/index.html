@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
-
     <style>
       body { font-family: 'Roboto', sans-serif; letter-spacing: 0.05em; font-size: max(2vw, 2vh); color:white}
       button {height:max(5vw, 5vh);font-size: max(2vw, 2vh);font-weight: bold; border-radius: max(1.5vw, 1.5vh); padding-left: max(5vw, 5vh); padding-right: max(5vw, 5vh); border: 0; color: #62a7fe; background: #3d3d3d; transition:0.1s;user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
@@ -20,14 +19,19 @@
   </head>
   <body>
     <!--IMAGETARGETS-->
+		<imagetarget id='bear' src='targets/bear.png'></imagetarget>
+		<imagetarget id='bfly' src='targets/bfly.png'></imagetarget>
+		<imagetarget id='flower' src='targets/flower.png'></imagetarget>
+		<imagetarget id='lady' src='targets/lady.png'></imagetarget>
+		<imagetarget id='reel' src='targets/reel.png'></imagetarget>
+		<imagetarget id='rmn' src='targets/rmn.png'></imagetarget>
 
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
     <div id="startARDiv" class="ctaDiv" style="background: #2f2e32">
-      <select id="chooseCamSel" style="visibility: hidden; background: transparent; border: .05vh solid white; border-radius: max(0.5vw, 0.5vh); color:white; font-size: max(1.5vw, 1.5vh); position: absolute; bottom: 80px" 
-        onchange="SelectCam()"></select>
-      <p style="text-align: center; width:min(60vw, 60vh);">This augmented reality experience requires access to your device's camera and motion sensors</p>
-      <button id="startARButton" onclick="StartAR()" style="visibility: hidden">ALLOW ACCESS</button>
+      <select id="chooseCamSel" style="display:none" onchange="SelectCam()"></select>
+      <p style="text-align: center; width:min(60vw, 60vh);">此擴增實境體驗需要存取您的裝置相機和動作感測器<br>This augmented reality experience requires access to your device's camera and motion sensors</p>
+      <button id="startARButton" onclick="StartAR()" style="visibility: hidden; height:max(8vw, 8vh);font-size: max(2.5vw, 2.5vh);padding-top: max(1vw, 1vh);padding-bottom: max(1vw, 1vh);">允許存取<br>ALLOW ACCESS</button>
       <br><br><br>
     </div>
     <div id="screenshotDiv" style="visibility: hidden; opacity: 0;" class="ctaDiv">
@@ -39,16 +43,16 @@
               <line x1="3" y1="21" x2="21" y2="3" stroke="#999" stroke-width="2.5"></line>
             </svg>
           </button> 
-          <p style="font-size: max(1vw, 1vh); color: #fff6" >Press and hold to save or share this screenshot</p>
+          <p style="font-size: max(1vw, 1vh); color: #fff6" >長按以儲存或分享此截圖<br>Press and hold to save or share this screenshot</p>
           </div>
     </div>
     <div id="confirmUrlDiv" style="visibility: hidden; opacity: 0;" class="ctaDiv">
         <div style="position:relative; background-color:#2c2b2f; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: min(80vw,80vh); display:flex; flex-direction: column; align-items: center; border-radius: 1.5vh;
 ">
-            <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">Are you sure you want to visit url.com?</p>
+            <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">您確定要造訪 url.com 嗎？<br>Are you sure you want to visit url.com?</p>
             <div style="width: 100%">
-                <button style="width: 100%; margin-bottom: 15px;" onclick="window.open(newUrlString, '_blank').focus(); HideConfirmUrl()">VISIT SITE</button>
-                <button style="width: 100%" onclick="HideConfirmUrl()">GO BACK</button>
+                <button style="width: 100%; margin-bottom: 15px; height:max(8vw, 8vh);font-size: max(2.5vw, 2.5vh);padding-top: max(1vw, 1vh);padding-bottom: max(1vw, 1vh);" onclick="window.open(newUrlString, '_blank').focus(); HideConfirmUrl()">造訪網站<br>VISIT SITE</button>
+                <button style="width: 100%; height:max(8vw, 8vh);font-size: max(2.5vw, 2.5vh);padding-top: max(1vw, 1vh);padding-bottom: max(1vw, 1vh);" onclick="HideConfirmUrl()">返回<br>GO BACK</button>
             </div>
         </div>
     </div>
@@ -74,12 +78,10 @@
           event.preventDefault();
         }
       }, { passive: false });
-
       // Disable pinch to zoom
       document.addEventListener('gesturestart', function (event) {
         event.preventDefault();
       });
-
       var initialize = async() =>{
         var unityCanvas = document.querySelector("#unity-canvas");
         var videoCanvas = document.querySelector("#video-canvas");
@@ -94,28 +96,22 @@
             ShowError("Failed to initialize the World Tracker.");
             return;
         }
-
         await LoadWebcams();
         document.getElementById("startARButton").style.visibility = "visible";
-
         window.camPermissionsGranted = await IsCameraPermissionGranted();
         window.motionPermissionsGranted = await IsMotionSensorPermissionGranted();
       }
-
       initialize();
-
       window.addEventListener("load", function () {
         if ("serviceWorker" in navigator) {
           navigator.serviceWorker.register("ServiceWorker.js");
         }
       });
-
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
-
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
       // If type=='warning', a yellow highlight color is used.
@@ -139,19 +135,7 @@
         }
         updateBannerVisibility();
       }
-
-      function StartAR() {
-        if(window.arStarted) return;
-
-        window.arStarted = true;
-
-        var startARDiv = document.querySelector("#startARDiv");
-        startARDiv.style.opacity = 0;
-        setTimeout(()=>{
-          startARDiv.style.visibility = "hidden";
-          startARDiv.style.display = "none";
-        }, 500);
-
+      function loadUnity() {
         var buildUrl = "Build";
         var loaderUrl = buildUrl + "/0606.loader.js";
         var config = {
@@ -164,24 +148,7 @@
           productVersion: "0.1",
           showBanner: unityShowBanner,
         };
-
-        // By default Unity keeps WebGL canvas render target size matched with
-        // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-        // Set this to false if you want to decouple this synchronization from
-        // happening inside the engine, and you would instead like to size up
-        // the canvas DOM size and WebGL render target sizes yourself.
-        // config.matchWebGLToCanvasSize = false;
-
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-          // Mobile device style: fill the whole browser client area with the game canvas:
-          var meta = document.createElement('meta');
-          meta.name = 'viewport';
-          meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-          document.getElementsByTagName('head')[0].appendChild(meta);
-        }
-
         loadingBar.style.display = "block";
-
         var script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
@@ -189,34 +156,36 @@
             progressBarFull.style.width = 100 * progress + "%";
           }).then((unityInstance) => {
             loadingBar.style.display = "none";
-            
             window.unityInstance = unityInstance;
             if(!window.camPermissionsGranted) {
-              RequestWebcam();
+              // 已經有 webcamStream，不需再請求
             }
           }).catch((message) => {
             alert(message);
           });
-          // if(!window.motionPermissionsGranted){
-            StartMotionSensors();
-          // }
-            
-          //Call Start GPS here --> StartGPS();
-
+          StartMotionSensors();
         };
         document.body.appendChild(script);
       }
-
+      function StartAR() {
+        if(window.arStarted) return;
+        window.arStarted = true;
+        var startARDiv = document.querySelector("#startARDiv");
+        startARDiv.style.opacity = 0;
+        setTimeout(()=>{
+          startARDiv.style.visibility = "hidden";
+          startARDiv.style.display = "none";
+        }, 500);
+        loadUnity();
+      }
       //Set Facing Mode here ('environment', 'user', '')
 		window.unityFacingMode = "environment"
-
       window.WEBCAM_SETTINGS = {
           video: {
               facingMode: unityFacingMode,
           },
           audio: false
       };
-
       window.requestingForPermissions = false;
       async function RequestWebcam(){
           window.requestingForPermissions = true;
@@ -224,36 +193,27 @@
               window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
               console.log("Webcam access granted");
               requestingForPermissions = false;
-
               // Immediately stop the stream to release the camera
               StopWebcam();
           }
           catch (err) {
-              //user denied camera permission - show error panel
-              console.error("getUserMedia error - " , err);
-              ShowError("Failed to start the experience. Camera permission was denied");
-              window.requestingForPermissions = false;
+              setTimeout(function() { location.reload(); }, 2000);
+              return;
           }           
       }
-
       function StopWebcam(){
           console.log("stopping camera");
           window.webcamStream.getTracks().forEach(track => track.stop());    
       }
-
       async function StartWebcam(){
           console.log("StartWebcam")
-
           window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
-
           while (window.requestingForPermissions) {
               // Wait until requestingForPermissions becomes true.
               console.log("Waiting for permissions...");
               await new Promise(resolve => setTimeout(resolve, 100)); // Adjust the delay time as needed.
           }
-
           console.log("Got Permissions");
-
           if(window.webcamStream)
           {
               const video = document.querySelector("#webcam-video");
@@ -261,11 +221,8 @@
               try {
                   await arCamera.startWebcam(video);
                   console.log("Webcam started successfully");
-
                   window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamSuccess');
-
                  
-
                   //replace background transparency
                   const canvas = document.querySelector("#unity-canvas");
                   let bgColor = window.getComputedStyle(canvas).backgroundColor;
@@ -282,7 +239,6 @@
               window.unityInstance.SendMessage('ARCamera', 'OnStartWebcamFail');
           }  
       }
-
       async function LoadWebcams(){
           let camDevices = [];
           // let backCams = [];
@@ -290,7 +246,6 @@
           var ctr = 0;
           devices.forEach(mediaDevice => {
               if (mediaDevice.kind === 'videoinput') {
-
                   if(window.unityFacingMode == 'environment' && !mediaDevice.label.includes('facing front')){
                       //back cam only
                       camDevices.push(mediaDevice);
@@ -334,15 +289,11 @@
           window.WEBCAM_SETTINGS.video['deviceId'] = deviceId;
           //console.log(window.WEBCAM_SETTINGS);
           wTracker.WEBCAM_NAME = select.options[select.selectedIndex].innerHTML;
-
           console.log("selecting camera index [" + select.selectedIndex + "] -> " + wTracker.WEBCAM_NAME);
-
       }
-
       async function FlipCam(){
           arCamera.stopWebcam();
           window.WEBCAM_SETTINGS.video.deviceId = '';
-
           if(window.WEBCAM_SETTINGS.video.facingMode == 'user'){
               window.WEBCAM_SETTINGS.video.facingMode = 'environment';
               arCamera.setFlipped(false);
@@ -352,19 +303,15 @@
               arCamera.setFlipped(true);
           }
           window.webcamStream = await navigator.mediaDevices.getUserMedia(window.WEBCAM_SETTINGS);
-
           const video = document.querySelector("#webcam-video");
           video.srcObject = webcamStream;
-
           await arCamera.startWebcam(video);
       }
-
       async function IsCameraPermissionGranted() {
           if (!navigator.permissions || !navigator.mediaDevices) {
               console.log("Permissions API or mediaDevices not supported.");
               return false;
           }
-
           try {
               // Query the status of the camera permission
               const permissionStatus = await navigator.permissions.query({ name: "camera" });
@@ -383,13 +330,11 @@
               return false;
           }
       }
-
       async function IsMotionSensorPermissionGranted() {
           if (!navigator.permissions) {
               console.log("Permissions API not supported.");
               return false;
           }
-
           try {
               // Query the status of the accelerometer permission
               const permissionStatus = await navigator.permissions.query({ name: "accelerometer" });
@@ -408,13 +353,11 @@
               return false;
           }
       }
-
       async function IsGPSPermissionGranted() {
         if (!navigator.permissions) {
             console.log("Permissions API not supported.");
             return false;
         }
-
         try {
             // Query the status of the geolocation permission
             const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
@@ -433,7 +376,6 @@
             return false;
         }
       }
-
       function StartMotionSensors(){
             window.wTracker.startAngles()
             .then(()=>{
@@ -442,10 +384,8 @@
             .catch(error=>{
                 console.error("Failed to start motion sensors - " + error);
                 ShowError("Failed to start the experience. " + error);
-
             });
         }
-
         function StartGPS(){            
             window.wTracker.startGPS()
             .then((pos)=>{
@@ -456,24 +396,20 @@
                 //ShowError("Failed to start GPS " + error);
             });
         }
-
       function ShowError(error){
           var errorDiv = document.getElementById("errorDiv");
           errorDiv.style.opacity = 1;
           errorDiv.style.visibility = "visible";
           document.getElementById("errorText").innerHTML = error;
       }
-
       function ShowScreenshot(dataUrl){
           var screenshotDiv = document.getElementById("screenshotDiv");
           screenshotDiv.style.opacity = 1;
           screenshotDiv.style.visibility = "visible";
-
           document.getElementById("screenshotImg").src = dataUrl;
           document.getElementById("screenshotImg").style.width = "80vw";
           document.getElementById("screenshotImg").style.height = 80 / window.innerWidth * window.innerHeight + "vw";
       }
-
       function HideScreenshot(){
           var screenshotDiv = document.getElementById('screenshotDiv');
           screenshotDiv.style.opacity = 0;
@@ -481,7 +417,6 @@
             screenshotDiv.style.visibility = 'hidden';
           }, 500);
       }
-
       function ShowConfirmUrl(url){
           var confirmUrlDiv = document.getElementById("confirmUrlDiv");
           confirmUrlDiv.style.opacity = 1;
@@ -489,7 +424,6 @@
           window.newUrlString = url;
           document.getElementById("confirmUrlText").innerText = "Are you sure you want to visit " + url + "?";                
       }
-
       function HideConfirmUrl(){
           var confirmUrlDiv = document.getElementById("confirmUrlDiv");
           confirmUrlDiv.style.opacity = 0;
@@ -497,7 +431,6 @@
             confirmUrlDiv.style.visibility = 'hidden';
           }, 500);
       }
-
     </script>
   </body>
 </html>
