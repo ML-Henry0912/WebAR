@@ -1,0 +1,37 @@
+{
+  "prototypes": [
+    {
+      "id": "tile_20",
+      "name": "裝飾磁磚 20",
+      "type": "gltf",
+      "url": "models/Tile20.glb"
+    },
+    {
+      "id": "red_brick",
+      "name": "紅磚",
+      "type": "primitive",
+      "config": {
+        "shape": "cube",
+        "color": "#B22222"
+      }
+    },
+    {
+      "id": "stone_block",
+      "name": "石塊",
+      "type": "primitive",
+      "config": {
+        "shape": "cube",
+        "color": "#808080"
+      }
+    },
+    {
+      "id": "blue_tile",
+      "name": "藍色磁磚",
+      "type": "primitive",
+      "config": {
+        "shape": "cube",
+        "color": "#4682B4"
+      }
+    }
+  ]
+}
