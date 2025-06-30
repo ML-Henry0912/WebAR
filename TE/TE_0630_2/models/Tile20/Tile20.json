@@ -1,0 +1,14 @@
+{
+  "id": "Tile20",
+  "name": "測試用 20cm 磁磚",
+  "type": "gltf (glb)",
+  "shape": "rectangle",
+  "url": "Tile20.glb",
+  "preview": "Tile20_preview.png",
+  "description": "測試用，直接對應 Tile20.glb，含簡單貼圖。",
+  "real_width": 20,
+  "real_height": 20,
+  "real_depth": 1,
+  "min_gap": 0.3,
+  "rotations": [0, 90, 180, 270]
+}
