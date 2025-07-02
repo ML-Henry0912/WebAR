@@ -1,0 +1,14 @@
+{
+  "id": "Tile21",
+  "name": "測試用 21cm 磁磚",
+  "type": "gltf (glb)",
+  "shape": "rectangle",
+  "url": "Tile21.glb",
+  "preview": "Tile21_preview.png",
+  "description": "測試用，直接對應 Tile21.glb，含純白貼圖。",
+  "real_width": 21,
+  "real_height": 21,
+  "real_depth": 1,
+  "min_gap": 0.3,
+  "rotations": [0, 90, 180, 270]
+}

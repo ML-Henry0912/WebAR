@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tile Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif, 'Noto Sans TC';
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow: hidden; /* Prevent body scroll */
+      }
+      /* Custom scrollbar for webkit browsers */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #1f2937; /* bg-gray-800 */
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #4b5563; /* bg-gray-600 */
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #6b7280; /* bg-gray-500 */
+      }
+      /* Styles for rendered markdown in help modal */
+      .help-content h1 {
+          font-size: 1.875rem; line-height: 2.25rem; /* text-3xl */
+          font-weight: 700;
+          margin-top: 1.5rem;
+          margin-bottom: 1rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #4b5563; /* border-gray-600 */
+      }
+      .help-content h2 {
+          font-size: 1.5rem; line-height: 2rem; /* text-2xl */
+          font-weight: 600;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #374151; /* border-gray-700 */
+      }
+      .help-content h3 {
+          font-size: 1.25rem; line-height: 1.75rem; /* text-xl */
+          font-weight: 600;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+      }
+      .help-content p {
+          line-height: 1.75;
+          margin-bottom: 1rem;
+      }
+      .help-content a {
+          color: #60a5fa; /* text-blue-400 */
+      }
+      .help-content a:hover {
+          text-decoration: underline;
+      }
+      .help-content ul, .help-content ol {
+          margin-left: 1.5rem;
+          margin-bottom: 1rem;
+      }
+      .help-content ul { list-style-type: disc; }
+      .help-content ol { list-style-type: decimal; }
+      .help-content li { margin-bottom: 0.25rem; }
+      .help-content code {
+          background-color: #374151; /* bg-gray-700 */
+          color: #fcd34d; /* text-yellow-300 */
+          padding: 0.125rem 0.375rem;
+          border-radius: 0.375rem;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: 0.875rem;
+      }
+      .help-content pre {
+          background-color: #111827; /* bg-gray-900 */
+          padding: 1rem;
+          border-radius: 0.5rem;
+          overflow-x: auto;
+          margin-bottom: 1rem;
+      }
+      .help-content pre code {
+          background-color: transparent;
+          color: inherit;
+          padding: 0;
+          font-size: 0.875rem;
+      }
+      .help-content strong {
+          font-weight: 600;
+      }
+      .help-content table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+      }
+      .help-content th, .help-content td {
+        border: 1px solid #4b5563; /* border-gray-600 */
+        padding: 0.5rem 1rem;
+      }
+      .help-content th {
+        font-weight: 600;
+        background-color: #374151; /* bg-gray-700 */
+      }
+      .panel-background {
+        background-color: #1f2937; /* bg-gray-800 */
+      }
+
+      /* --- Panel Animations --- */
+      @keyframes slide-out-left {
+        from { transform: translateX(0); }
+        to { transform: translateX(-100%); }
+      }
+      @keyframes slide-in-left {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+      }
+      @keyframes slide-out-right {
+          from { transform: translateX(0); }
+          to { transform: translateX(100%); }
+      }
+      @keyframes slide-in-right {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+      }
+      .animate-slide-out-left {
+          animation: slide-out-left 0.3s ease-in forwards;
+      }
+      .animate-slide-in-left {
+          animation: slide-in-left 0.3s ease-out forwards;
+      }
+      .animate-slide-out-right {
+          animation: slide-out-right 0.3s ease-in forwards;
+      }
+      .animate-slide-in-right {
+          animation: slide-in-right 0.3s ease-out forwards;
+      }
+    </style>
+    <style id="theme-overrides">
+      /* --- Select Mode Theme (Cool Slate & Emerald Green) Overrides --- */
+
+      /* Panel Backgrounds */
+      .theme-select .panel-background {
+        /* Faint, semi-transparent light green */
+        background-color: rgba(52, 211, 153, 0.15) !important; /* semi-transparent emerald-400 */
+      }
+
+      /* General Backgrounds */
+      .theme-select .bg-gray-900 { background-color: #0f172a !important; } /* slate-900 */
+      .theme-select .bg-gray-800 { background-color: #1e293b !important; } /* slate-800 */
+      .theme-select .bg-gray-700 { background-color: #334155 !important; } /* slate-700 */
+      .theme-select .bg-gray-600 { background-color: #475569 !important; } /* slate-600 */
+      .theme-select .hover\:bg-gray-600:hover { background-color: #475569 !important; } /* slate-600 */
+      .theme-select .hover\:bg-gray-700:hover { background-color: #334155 !important; } /* slate-700 */
+
+      /* Text */
+      .theme-select .text-gray-100 { color: #f1f5f9 !important; } /* slate-100 */
+      .theme-select .text-gray-200 { color: #e2e8f0 !important; } /* slate-200 */
+      .theme-select .text-gray-300 { color: #cbd5e1 !important; } /* slate-300 */
+      .theme-select .text-gray-400 { color: #94a3b8 !important; } /* slate-400 */
+      .theme-select .text-gray-500 { color: #64748b !important; } /* slate-500 */
+      
+      /* Borders */
+      .theme-select .border-black { border-color: #020617 !important; } /* slate-950 */
+      .theme-select .border-gray-700 { border-color: #334155 !important; } /* slate-700 */
+      .theme-select .border-gray-600 { border-color: #475569 !important; } /* slate-600 */
+
+      /* Accent Colors (Blue -> Emerald Green) */
+      .theme-select .bg-blue-600 { background-color: #16a34a !important; } /* emerald-600 */
+      .theme-select .text-blue-600 { color: #16a34a !important; }
+      .theme-select .text-blue-500 { color: #10b981 !important; } /* emerald-500 */
+      .theme-select .text-blue-400 { color: #34d399 !important; } /* emerald-400 */
+      .theme-select .hover\:bg-blue-600\/50:hover { background-color: rgba(22, 163, 74, 0.5) !important; } /* emerald-600/50 */
+      .theme-select .border-blue-400 { border-color: #34d399 !important; } /* emerald-400 */
+      .theme-select .focus\:ring-blue-500:focus {
+        --tw-ring-color: #10b981 !important; /* emerald-500 */
+      }
+
+      /* Scrollbar */
+      .theme-select .custom-scrollbar::-webkit-scrollbar-track {
+        background: #1e293b; /* bg-slate-800 */
+      }
+      .theme-select .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #475569; /* bg-slate-600 */
+      }
+      .theme-select .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #64748b; /* bg-slate-500 */
+      }
+
+      /* Help Modal Specific */
+      .theme-select .help-content a { color: #34d399 !important; } /* text-emerald-400 */
+      .theme-select .help-content code { background-color: #334155 !important; color: #fcd34d !important; }
+      .theme-select .help-content pre { background-color: #0f172a !important; }
+      .theme-select .help-content h1 { border-bottom-color: #475569 !important; }
+      .theme-select .help-content h2 { border-bottom-color: #334155 !important; }
+      .theme-select .help-content th, .theme-select .help-content td { border: 1px solid #475569 !important; }
+      .theme-select .help-content th { background-color: #334155 !important; }
+
+    </style>
+
+  <script type="importmap">
+{
+  "imports": {
+    "@/": "./src/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "three": "https://esm.sh/three@^0.177.0",
+    "three/addons/": "https://esm.sh/three@^0.177.0/examples/jsm/",
+    "immer": "https://esm.sh/immer@^10.1.1",
+    "three/": "https://esm.sh/three@^0.177.0/",
+    "marked": "https://esm.sh/marked@^13.0.2"
+  }
+}
+</script>
+  <script type="module" crossorigin src="./assets/index-PqGmmogQ.js"></script>
+</head>
+  <body class="bg-gray-800 text-gray-100 theme-paint">
+    <div id="root"></div>
+</body>
+</html>

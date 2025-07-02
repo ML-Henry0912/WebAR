@@ -1,0 +1,14 @@
+{
+  "id": "Tile22",
+  "name": "Tile 22",
+  "type": "gltf (glb)",
+  "shape": "rectangle",
+  "url": "Tile22.glb",
+  "preview": "Tile22_preview.png",
+  "description": "Tile 22 說明",
+  "real_width": 30,
+  "real_height": 30,
+  "real_depth": 1,
+  "min_gap": 0.3,
+  "rotations": [0, 90, 180, 270]
+}
